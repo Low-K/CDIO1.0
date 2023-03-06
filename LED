@@ -1,0 +1,39 @@
+/**********************LED.c***********************/
+#include "LED.h"
+
+extern char num;	//调用KEY.c文件，阈值
+
+void LED_Init(void){	//LED灯初始化
+	P1M0 = 0xe0;
+	LED_R = LED_Y = LED_G = 0;
+}
+
+void LED_IF_OPEN(void){	//LED灯状态判断
+	if(num < 40){	//阈值小于40，黄灯亮
+		LED_Y = 1;
+		BEEP = LED_R = LED_G = 0;
+	}
+	else if(num > 80){	//阈值大于80，红灯亮，蜂鸣器响
+		BEEP = LED_R = 1;
+		LED_Y = LED_G = 0;
+	}
+	else{	//阈值位于40~80间，绿灯亮
+		LED_G = 1;
+		BEEP = LED_Y = LED_R = 0;
+	}
+}
+
+/**********************LED.h***********************/
+#ifndef __LED_H
+#define __LED_H
+
+#include "main.h"
+
+void LED_Init(void);
+void LED_IF_OPEN(void);
+
+sbit LED_R = P1^6;
+sbit LED_Y = P1^5;
+sbit LED_G = P1^7;
+
+#endif
