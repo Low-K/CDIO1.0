@@ -1,0 +1,25 @@
+/************************SEOR.c*************************/
+#include "SEOR.h"
+
+extern u8 PWMTime;	//调用TIM.c文件，输出PWM波
+extern u8 Angle;	//调用KEY.c文件，舵机旋转角度
+extern char num;	//调用KEY.c文件，阈值
+extern u8 cMode;	//调用KEY.c文件，模式值
+
+void SEOR_Init(void){	//舵机旋转判断
+	if(num > 55 && cMode == 1) Angle = Frequency_25;	//模式1，如果超过阈值，阀门开
+	if(num <= 55 && cMode == 1) Angle = Frequency_5; 	//模式1，如果低于阈值，阀门关
+	if(++PWMTime <= Angle) Servos = 1;
+	else Servos = 0;
+	if(PWMTime == Frequency_200) PWMTime = 0;
+}
+
+/*************************SEOR.h*************************/
+#ifndef __SEOR_H
+#define __SEOR_H
+
+#include "main.h"
+
+void SEOR_Init(void);
+
+#endif
