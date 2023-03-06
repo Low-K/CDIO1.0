@@ -1,0 +1,18 @@
+/*****************************BEEP.c****************************/
+#include "BEEP.h"
+
+void BEEP_Init(void){	//蜂鸣器初始化
+	P2M0 = 0x20;
+	BEEP = 0;
+}
+
+/*****************************BEEP.h****************************/
+#ifndef __BEEP_H
+#define __BEEP_H
+
+#include "main.h"
+
+void BEEP_Init(void);
+sbit BEEP = P2^5;
+
+#endif
