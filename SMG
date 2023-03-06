@@ -1,0 +1,30 @@
+/**************************SMG.c******************************/
+#include "SMG.h"
+
+u16 SMG_Positional[] = {0xdf, 0xef, 0x5f, 0x9f};	//共阴，位选低亮 
+u16 SMG_SePa[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x5e, 0x40};	//位选高为亮
+u16 SMG_Cache[4];	//显示缓存
+extern char num;	//调用KEY.c文件中的数字
+
+void SMG_Init(void){	//数码管初始化
+	P4SW = P4SW | 0x30;	//编写P4 IO口寄存器，使得P4.5和P4.4做普通IO口使用
+	P0M0 = 0xff;
+}
+
+void SMG_OP(void){
+	SMG_Cache[0] = SMG_SePa[10];
+	SMG_Cache[1] = SMG_SePa[11];
+	SMG_Cache[2] = SMG_SePa[num / 10];
+	SMG_Cache[3] = SMG_SePa[num % 10];
+}
+
+/***************************SMG.h***************************/
+#ifndef __SMG_H
+#define __SMG_H
+
+#include "main.h"
+
+void SMG_Init(void);
+void SMG_OP(void);
+
+#endif
