@@ -1,0 +1,118 @@
+/************************TIM.c**************************/
+#include "TIM.h"
+
+extern u16 SMG_Positional[]; //调用SMG.c文件内的位选数组
+extern u16 SMG_Cache[4];	//调用SMG.c文件内的段选算式
+u8 Pointer;	//选取位选
+u8 Key_value_storage;	//按键值储存
+u8 DelayKey;	//键值判断标志
+u8 PWMTime;	//用于输出PWM波
+u8 FUNC_Frequency;	//功能频率的判断值
+bit bStill;	//按键3的松键判断标志值
+
+/********************定时器0初始化********************/
+void TIM_InitT0(void){	//每0.1ms进入一次中断
+	TMOD |= 0x01;	
+	TH0 = 0xff;
+	TL0 = 0xa4;
+	ET0 = 1;
+	EA = 1;
+	TR0 = 1;
+}
+
+/********************定时器0中断********************/
+void InitT0() interrupt 1{
+	TH0 = 0xff;
+	TL0 = 0xa4;
+	
+	SEOR_Init();	//舵机函数
+	InitT0_Functional();	//定时器中断0的功能函数
+}
+
+void InitT0_Functional(void){	//定时器0中断的功能函数
+	if(++FUNC_Frequency < Frequency_25) return;	//未达到2.5ms跳出该中断功能函数
+	if(DelayKey == 0){
+			Key_value_storage = P2 & 0x1c;	//00011100只判断3个按键，不考虑其他IO口
+			if(Key_value_storage != 0x1c) DelayKey = 4;	//延时消抖
+			else bStill = 0;
+		}
+	else KEY_Judgment();	//按键消抖判断
+		
+	SMG_OP();	//数码管显示数组计算
+
+	P0 = SMG_Cache[Pointer];	//数码管段选显示
+	if(Pointer < 2){	//位于P4口的两个位选
+			P4 = SMG_Positional[Pointer++];	//显示位选
+			P2 = 0xdf;	//对P2的位选进行消影
+		}
+	else{	//位于P2口的两个位选
+			P2 = SMG_Positional[Pointer++];	//显示位选
+			P4 = 0xff;	//对P4的位选进行消影
+		}
+	Pointer %= 4;	//每4次一循环
+	FUNC_Frequency = 0;	//进入一次中断后功能频率值清零，等待下一次的2.5ms进入中断
+}
+#include "TIM.h"
+
+extern u16 SMG_Positional[]; //调用SMG.c文件内的位选数组
+extern u16 SMG_Cache[4];	//调用SMG.c文件内的段选算式
+u8 Pointer;	//选取位选
+u8 Key_value_storage;	//按键值储存
+u8 DelayKey;	//键值判断标志
+u8 PWMTime;	//用于输出PWM波
+u8 FUNC_Frequency;	//功能频率的判断值
+bit bStill;	//按键3的松键判断标志值
+
+/********************定时器0初始化********************/
+void TIM_InitT0(void){	//每0.1ms进入一次中断
+	TMOD |= 0x01;	
+	TH0 = 0xff;
+	TL0 = 0xa4;
+	ET0 = 1;
+	EA = 1;
+	TR0 = 1;
+}
+
+/********************定时器0中断********************/
+void InitT0() interrupt 1{
+	TH0 = 0xff;
+	TL0 = 0xa4;
+	
+	SEOR_Init();	//舵机函数
+	InitT0_Functional();	//定时器中断0的功能函数
+}
+
+void InitT0_Functional(void){	//定时器0中断的功能函数
+	if(++FUNC_Frequency < Frequency_25) return;	//未达到2.5ms跳出该中断功能函数
+	if(DelayKey == 0){
+			Key_value_storage = P2 & 0x1c;	//00011100只判断3个按键，不考虑其他IO口
+			if(Key_value_storage != 0x1c) DelayKey = 4;	//延时消抖
+			else bStill = 0;
+		}
+	else KEY_Judgment();	//按键消抖判断
+		
+	SMG_OP();	//数码管显示数组计算
+
+	P0 = SMG_Cache[Pointer];	//数码管段选显示
+	if(Pointer < 2){	//位于P4口的两个位选
+			P4 = SMG_Positional[Pointer++];	//显示位选
+			P2 = 0xdf;	//对P2的位选进行消影
+		}
+	else{	//位于P2口的两个位选
+			P2 = SMG_Positional[Pointer++];	//显示位选
+			P4 = 0xff;	//对P4的位选进行消影
+		}
+	Pointer %= 4;	//每4次一循环
+	FUNC_Frequency = 0;	//进入一次中断后功能频率值清零，等待下一次的2.5ms进入中断
+}
+
+/******************************TIM.h*****************************/
+#ifndef __TIM_H
+#define __TIM_H
+
+#include "main.h"
+
+void TIM_InitT0(void);
+void InitT0_Functional(void);
+
+#endif
