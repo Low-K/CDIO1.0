@@ -1,0 +1,90 @@
+/***************************KEY.c****************************/
+#include "KEY.h"
+
+typedef int bool;
+
+extern u8 DelayKey;	//调用TIM.c文件中的值，消抖时间值
+extern u8 Key_value_storage;	//调用TIM.c文件中的值，按键初次保存值
+extern bit bStill;	//调用TIM.c文件中的值，按键3松键标志值
+int	ifM0Key1Open;
+int	ifM1Key1Open;
+int	ifM0Key2Open;
+int	ifM1Key2Open;
+int ifKey3Open;
+
+u8 nKey_value_storage;	//按键消抖储存值
+char num = 50;	//初始阈值
+u8 Angle = Frequency_5;	//初始阀门角度，关
+u8 cMode;	//模式变量
+
+
+int IF_KEY1_Mode0_OPEN(void){	//模式0(人工手动关阀门)的按键1
+	return KEY_UP == 0 && cMode == 0;
+}
+int IF_KEY1_Mode1_OPEN(void){	//模式1(自动识别，阈值＋)的按键1
+	return KEY_UP == 0 && cMode == 1;
+}
+int IF_KEY2_Mode0_OPEN(void){	//模式0(人工手动开阀门)的按键2
+	return KEY_DOWN == 0 && cMode == 0;
+}
+int IF_KEY2_Mode1_OPEN(void){	//模式1(自动识别，阈值-)的按键2
+	return KEY_DOWN == 0 && cMode == 1;
+}
+int IF_KEY3_OPEN(void){	//按键3(切换手动模式0或者自动模式1)
+	return KEY_RET == 0 && bStill == 0;
+}
+
+void KEY_Value_Operations(void){	//按键操作
+	ifM0Key1Open = IF_KEY1_Mode0_OPEN();
+	ifM1Key1Open = IF_KEY1_Mode1_OPEN();
+	ifM0Key2Open = IF_KEY2_Mode0_OPEN();
+	ifM1Key2Open = IF_KEY2_Mode1_OPEN();
+	ifKey3Open = IF_KEY3_OPEN();
+	
+	if(ifM0Key1Open) Angle = Frequency_5;	//模式0按键1按下，阀门关
+		
+	if(ifM1Key1Open){	//模式1按键1按下，阈值＋
+		DelayKey = 100;
+		if(++num > 99) num = 50;
+	}
+	
+	if(ifM0Key2Open) Angle = Frequency_25;	//模式0按键2按下，阀门开
+	
+	if(ifM1Key2Open){	//模式1按键2按下，阈值-
+		DelayKey = 100;
+		if(--num < 0) num = 50;
+	}
+	
+	if(ifKey3Open){	//按键3按下，切换模式0或模式1
+		cMode++;
+		cMode %= 2;
+		bStill = 1;
+		DelayKey = 100;
+	}
+}
+
+void KEY_SJudgment(void){	//二次按键确定
+	nKey_value_storage = P2 & 0x1c;
+	if(nKey_value_storage == Key_value_storage) KEY_Value_Operations();
+}
+
+
+void KEY_Judgment(void){	//按键消抖
+	if(--DelayKey == 0) KEY_SJudgment();
+}
+
+/***************************KEY.h****************************/
+#ifndef __KEY_H
+#define __KEY_H
+
+#include "main.h"
+
+void KEY_Judgment(void);
+void KEY_Value_Operaations(void);
+void KEY_SJudgment(void);
+
+sbit KEY_UP = P2^4;
+sbit KEY_DOWN = P2^3;
+sbit KEY_RET = P2^2;
+
+#endif
