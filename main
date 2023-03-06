@@ -1,0 +1,44 @@
+/************************main.c*********************/
+#include "main.h"
+
+void main(){
+
+	LED_Init();	//LED灯初始化声明
+	LED_IF_OPEN();	//LED灯显示判断声明
+	BEEP_Init();	//蜂鸣器初始化声明
+	InitT0_Functional();	//定时器0中断的功能函数声明
+	SEOR_Init();	//舵机函数
+	TIM_InitT0();	//定时器0初始化
+	SMG_Init();	//数码管初始化声明
+	SMG_OP();	//数码管段选函数计算声明
+	SEOS_Init();
+	IIC_Star();
+	IIC_Stop();
+
+	while(1){
+		LED_IF_OPEN();	//LED灯显示
+	}
+}
+
+/************************main.h*********************/
+#ifndef __MAIN_H
+#define __MAIN_H
+
+#include <STC12C5A60S2.H>
+#include "LED.h"
+#include "KEY.h"
+#include "BEEP.h"
+#include "TIM.h"
+#include "SMG.h"
+#include "OLED.h"
+#include "SEOR.h"
+#include "SEOS.h"
+#include "IIC.h"
+
+#define u8 unsigned char
+#define u16 unsigned int
+#define Frequency_5 5
+#define Frequency_25 25
+#define Frequency_200 200
+
+#endif
